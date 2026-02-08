@@ -1,0 +1,196 @@
+# Cursor Rules — Sandbox Design System
+
+## Project Overview
+A glassmorphism component showcase built with Next.js 15 (App Router) + Tailwind CSS v4.
+The design language is **Glass** — frosted glass surfaces with pastel accent colors, animated particles, and rich interactivity.
+Pages are flat routes (`app/<name>/page.tsx`). No nested theme directories.
+
+## Architecture
+
+### File structure
+```
+app/
+  layout.tsx              # Root layout, fonts (Geist Sans, Geist Mono, Space Grotesk), ThemeProvider
+  globals.css             # All CSS variables, glass classes, animations, theme overrides
+  page.tsx                # Welcome / landing page with infographic walkthrough
+  buttons/page.tsx        # Buttons showcase
+  cards/page.tsx          # Cards showcase
+  calendar/page.tsx       # Calendar: Notion roadmap timeline, month calendar, analog clock, week ring
+  charts/page.tsx         # Charts: line, bar, scatter with SVG
+  devices/page.tsx        # Realistic CSS-only iPhone, MacBook, iPad mockups
+  docs/page.tsx           # Documentation page
+  flow/page.tsx           # Interactive React Flow-style node canvas (pan, zoom, wire, undo/redo)
+  navbar/page.tsx         # Navbar showcase
+  nodes/page.tsx          # Static node graph infographics (hover to highlight connections)
+  pricing/page.tsx        # Pricing table
+  table/page.tsx          # Table components
+components/
+  theme-provider.tsx      # React context for dark/light mode via data-theme attribute
+  theme-shell.tsx         # Layout wrapper: sticky navbar + main content (no sidebar)
+  ui/
+    button.tsx            # Button (primary | secondary | ghost, sm | md | lg)
+    card.tsx              # 3D tilt card with cursor-following specular glow
+    cryptic-text.tsx      # Animated text scramble effect
+    navbar.tsx            # 3D carousel navbar with perspective transforms
+    pricing.tsx           # Pricing table with 3 plans
+lib/
+  cn.ts                   # clsx + tailwind-merge utility
+```
+
+### Key patterns
+- **One component per file** in `components/ui/`.
+- Components are self-contained and copyable (shadcn-style). No deep coupling to routes.
+- Composition over abstraction. No heavy UI libraries.
+- `clsx` + `tailwind-merge` for class merging via `lib/cn.ts`.
+- Page components are large, self-contained files with inline sub-components.
+- **No sidebar** — navigation is via the sticky 3D carousel navbar at the top.
+
+## Layout
+- `ThemeShell` wraps all pages: `h-screen flex flex-col overflow-y-auto` with `scroll-behavior: smooth`.
+- `Navbar` is sticky at the top (`sticky top-0 z-40`) inside a centered `max-w-6xl` container.
+- No sidebar. Content flows full-width below the navbar.
+- Page backgrounds use decorative orbs (`--orb-1`, `--orb-2`) with `blur(120px)` and a dot grid pattern.
+
+## Color Palette — Glassmorphism + Pastel Accents
+Dark mode is default. Light mode is a cool off-white.
+
+### Pastel accent colors (used for nodes, events, charts, flow)
+- `--pastel-pink: #f2a0b8`
+- `--pastel-blue: #a0c4f2`
+- `--pastel-green: #a0e6c8`
+- `--pastel-yellow: #f2e0a0`
+- `--pastel-purple: #c0a0f2`
+- `--pastel-orange: #f2c0a0`
+
+Use pastels for color-coding categories, events, node types, chart series — never for primary text or backgrounds.
+
+## Theming Contract
+All styling derives from CSS variables in `app/globals.css`.
+
+### Dark/light mode
+- Toggled via `data-theme="light"` on `<html>` (not `.dark` class).
+- Managed by `ThemeProvider` context + inline FOUC-prevention script in layout.
+- All variables are overridden in `[data-theme="light"] { … }` block.
+- Do NOT duplicate class trees for modes — use tokens everywhere.
+
+### Core tokens
+| Purpose | Variable | Dark | Light |
+|---------|----------|------|-------|
+| Foreground | `--fg` | `#e8e8e8` | `#1a1a1e` |
+| Background | `--body-bg` | `#0a0a0a` | `#e4e5e8` |
+| Glass bg | `--glass-bg` | `rgba(255,255,255,0.03)` | `rgba(255,255,255,0.55)` |
+| Glass bg strong | `--glass-bg-strong` | `rgba(255,255,255,0.06)` | `rgba(255,255,255,0.70)` |
+| Glass border | `--glass-border` | `rgba(255,255,255,0.08)` | `rgba(0,0,0,0.06)` |
+| Glass border strong | `--glass-border-strong` | `rgba(255,255,255,0.14)` | `rgba(0,0,0,0.10)` |
+| Shadow | `--glass-shadow` | deep black | soft black |
+
+### Tailwind token registration
+Tokens are registered in `@theme inline` for utility class usage:
+- `text-fg`, `bg-fg/[0.06]`, `border-fg/10` etc.
+- `font-display` (Space Grotesk), `font-sans` (Geist), `font-mono` (Geist Mono).
+
+## Glass Material Recipe
+Two tiers of glass surface: `.glass` (subtle) and `.glass-strong` (elevated).
+
+Each glass surface includes:
+1. **Background**: semi-transparent `--glass-bg` with `backdrop-filter: blur(18px)`
+2. **Border**: thin `--glass-border`
+3. **Box-shadow**: multi-layer (outer diffuse, inset top edge, inset bottom edge, inner glow)
+4. **::before pseudo**: noise texture + left-edge sheen + specular blob + top-to-bottom gradient
+5. **Hover**: pseudo opacity increases to 1
+
+Use `color-mix(in srgb, <pastel-color> N%, transparent)` for tinted glass surfaces (event cards, node highlights, selection states).
+
+### 3D cards (`glass-3d`)
+- `transform: rotateX(var(--rx)) rotateY(var(--ry))` driven by mousemove via rAF
+- `::after` pseudo: radial gradient follows cursor (`--gx`, `--gy`)
+- `hover:[translate:0_-4px]` for lift
+- `perspective: 800px` on wrapper
+
+### Avoiding transform conflicts
+- Use individual CSS properties (`translate`, `scale`) instead of `transform` shorthand when the element also has interactive transforms.
+- `@keyframes` use `translate: 0 30px`, NOT `transform: translateY()`.
+
+## Navbar — 3D Carousel
+- 5-item carousel with `perspective`, `rotateY`, `translateZ`, `scale` transforms.
+- Custom cubic-bezier timing for buttery animations.
+- Single-click navigation: `Link` components navigate directly, `useEffect` handles carousel centering.
+- `routeIndex` returns `-1` on the home page so no item is highlighted.
+- Active item gets colored styling with icon drop-shadow.
+
+## Interactive Canvas Pages
+
+### Flow page (`app/flow/page.tsx`)
+Full React Flow-style interactive canvas, zero dependencies:
+- Pan (drag background), zoom (scroll, pointer-anchored), snap-to-grid (20px)
+- Draggable nodes with glassmorphic cards, colored accent bars, input/output ports
+- Wire drawing: drag from output port to input port
+- Node palette: double-click canvas to add nodes
+- Undo/redo history stack (Ctrl+Z / Ctrl+Shift+Z)
+- Delete (Backspace), duplicate (Ctrl+D), fit-to-view (1 key)
+- Edge selection, hover labels, animated particles along edges
+- Dot grid background, minimap, toolbar, keyboard shortcuts panel
+
+### Nodes page (`app/nodes/page.tsx`)
+Static SVG node graph infographics:
+- `NodeGraph` component with hover-to-highlight connections
+- Animated particles flowing along edges
+- 4 graphs: Component Tree, State Management, Build Pipeline, Data Fetching
+- Nodes have size variants (sm/md/lg), icons, labels, sublabels
+
+## Calendar Page Components
+
+### Notion Roadmap Timeline
+- Horizontal 12-week timeline with swim lanes by team
+- Color-coded project bars with status (done/in-progress/planned)
+- "Today" marker line, week column headers, selection detail bar
+
+### Month Calendar
+- Compact grid calendar with month navigation and "today" button
+- Previous/next month filler days, weekend column tinting
+- Event dots that morph to pills when selected
+- Bottom detail panel showing selected day's events
+
+### Analog Clock
+- Live SVG clock with smooth second hand, hour/minute markers
+- Fills its container via `flex-1`
+
+### Week Ring
+- Radial chart showing weekly busyness with spokes and polygon
+
+## Component Design Rules
+- Every component has sensible defaults, minimal variants, and good hover + focus states.
+- **Motion**: subtle transforms (1–4px), short durations (150–300ms), ease-out curves.
+- **Focus**: `focus-visible:ring-2 ring-fg/30 ring-offset-2`.
+- **Active**: `active:scale-[0.97]` press feedback on buttons.
+- **Opacity hierarchy**: primary `text-fg/80`, secondary `text-fg/50`, tertiary `text-fg/30`, muted `text-fg/15`.
+- All text lowercase in display/hero contexts.
+
+## Typography
+- **Display**: Space Grotesk — bold, tight tracking (`tracking-tighter`), for hero headings.
+- **Body**: Geist Sans — clean, readable at all sizes.
+- **Mono**: Geist Mono — code blocks, technical labels, data values, timestamps.
+- Use `font-mono` for all data-dense UI (stats, coordinates, time, percentages).
+
+## Performance Patterns
+- `requestAnimationFrame` for all mousemove handlers.
+- `ResizeObserver` for cached layout measurements.
+- `will-change: transform` on animated elements.
+- `cancelAnimationFrame` cleanup in useEffect returns.
+- Targeted CSS transitions (never `transition: all`).
+- `useCallback` and `useMemo` for expensive computations in interactive canvases.
+
+## Change Discipline
+When making changes:
+1. Use pastel colors for accents, `--fg` for text, glass variables for surfaces.
+2. Test both dark and light modes.
+3. Use CSS variables for any new values that differ between modes.
+4. Use individual CSS properties (`translate`, `scale`) instead of `transform` shorthand when the element also has interactive transforms.
+5. New pages go in `app/<name>/page.tsx` and get a navbar carousel entry in `components/ui/navbar.tsx`.
+6. Keep page components self-contained — inline sub-components are fine for page-specific widgets.
+
+## TypeScript
+- Strict mode, no `any` unless unavoidable.
+- Props interfaces defined per component.
+- `forwardRef` where ref forwarding is needed (Button).
+- SVG icon components accept `React.SVGProps<SVGSVGElement>`.

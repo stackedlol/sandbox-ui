@@ -1,0 +1,32 @@
+{
+  "name": "sandbox-ui",
+  "version": "0.1.0",
+  "description": "CLI for adding glassmorphism components to your project.",
+  "type": "module",
+  "bin": {
+    "sandbox-ui": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "registry",
+    "registry.json"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "commander": "^13.1.0",
+    "prompts": "^2.4.2",
+    "chalk": "^5.4.1",
+    "fs-extra": "^11.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/prompts": "^2.4.9",
+    "@types/fs-extra": "^11.0.4",
+    "typescript": "^5"
+  },
+  "keywords": ["glassmorphism", "ui", "components", "cli"],
+  "license": "MIT"
+}

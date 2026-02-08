@@ -1,0 +1,56 @@
+{
+  "components": {
+    "button": {
+      "name": "Button",
+      "description": "Button with primary, secondary, and ghost variants. Supports sm/md/lg sizes.",
+      "files": ["components/ui/button.tsx"],
+      "localDependencies": ["cn"],
+      "registryDependencies": [],
+      "packages": [],
+      "cssClasses": ["glass", "glass-strong"]
+    },
+    "card": {
+      "name": "Card",
+      "description": "3D tilt card with cursor-following specular glow and glassmorphism.",
+      "files": ["components/ui/card.tsx"],
+      "localDependencies": ["cn"],
+      "registryDependencies": [],
+      "packages": [],
+      "cssClasses": ["glass", "glass-3d"]
+    },
+    "cryptic-text": {
+      "name": "Cryptic Text",
+      "description": "Animated text scramble/reveal effect with configurable glyphs and timing.",
+      "files": ["components/ui/cryptic-text.tsx"],
+      "localDependencies": [],
+      "registryDependencies": [],
+      "packages": []
+    },
+    "navbar": {
+      "name": "Navbar",
+      "description": "3D carousel navbar with perspective transforms and smooth navigation.",
+      "files": ["components/ui/navbar.tsx"],
+      "localDependencies": ["cn"],
+      "registryDependencies": ["button"],
+      "packages": ["next"],
+      "cssClasses": ["glass"]
+    },
+    "pricing": {
+      "name": "Pricing Table",
+      "description": "Tiered pricing cards with premium glass effects and pastel accents.",
+      "files": ["components/ui/pricing.tsx"],
+      "localDependencies": ["cn"],
+      "registryDependencies": ["card", "button"],
+      "packages": [],
+      "cssClasses": ["glass", "glass-strong"]
+    }
+  },
+  "utils": {
+    "cn": {
+      "name": "cn",
+      "description": "Class merging utility (clsx + tailwind-merge).",
+      "files": ["lib/cn.ts"],
+      "packages": ["clsx", "tailwind-merge"]
+    }
+  }
+}

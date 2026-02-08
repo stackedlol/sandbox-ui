@@ -1,13 +1,12 @@
 {
-  "name": "sandbox",
+  "name": "sandbox-ui-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "sync-template": "rsync -a --delete --exclude='node_modules' --exclude='.next' --exclude='.git' --exclude='packages' --exclude='package-lock.json' --exclude='.cursorrules' --exclude='docs' --exclude='.vercel' --exclude='.env*' --exclude='*.tsbuildinfo' --exclude='next-env.d.ts' --exclude='.gitignore' . packages/create-sandbox-ui/template/ && cp .gitignore packages/create-sandbox-ui/template/_gitignore"
+    "lint": "eslint"
   },
   "dependencies": {
     "clsx": "^2.1.1",
